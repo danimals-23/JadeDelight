@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jade Delight</title>
+</head>
+<style>
+
+	h1 {
+		font-size: 50px;
+	}
+
+	h2 {
+		font-size: 30px;
+	}
+
+	body {
+		text-align: center;
+		background-color: #42c498;
+		font-size: 18px;
+		font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+	}
+	table {
+		margin: 0 auto;
+	}
+	
+	form {
+		margin: 0 auto;
+		max-width: 700px;
+		border: 1px solid black;
+		
+	}
+
+	#button{
+		margin-top: 1rem;
+		display: inline-block;
+		font-size: 1.7rem;
+		color:rgb(0, 0, 0);
+		cursor: pointer;
+
+		background-color: #35CD8C;
+		padding: 8px 30px;
+		margin: 30px 0;
+		border-radius: 30px;
+	}
+
+	#button:hover {
+		background-color: #2E266F;
+		color: white;
+	}
+
+
+</style>
+
+
+<script language="javascript">
+	window.onload = function() {
+		check(); // onload checks to see if delivery or pickup is checked
+	}
+
+	function validate() { // main validation function, calls on multiple other functions
+		if(document.getElementsByName('lname')[0].value == ""){
+			alert("Please enter a last name.");
+			return false; // returns false if no last name is given
+		}
+		if(validateDelivery() && validateNumber() && checkPrices() && validateTime()){
+			alert("Thank you for your order!"); // if everything above is valid, thank the user for ordering
+			writeDoc(); // then, write the receipt on a new doc
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+
+	function validateNumber() {
+		num = document.getElementsByName('phone')[0].value;
+		len = num.replace(/[^0-9]/g, "").length;
+		if(!(len == 7 || len == 10)){ // validates that the length of the number is either 7 or 10
+			alert('Please enter a valid Phone Number');
+		}
+		return (len == 7 || len == 10);
+	}
+
+	function getPrices() {
+		prices = document.getElementsByClassName('cost');
+		total = document.getElementsByName('cost');
+
+		subtotal = 0;
+
+		for(i = 0; i < prices.length; i++){
+			str = 'quan' + i; // goes through the elementnames, which are quan0 to quan 5
+
+			// gets total cost for each quantity
+			totalCost = parseFloat(document.getElementsByName('quan' + i)[0].value) * parseFloat((prices[i].innerText).substring(1));
+
+			// updates the cost in the input boxes
+			total[i].value = totalCost.toFixed(2);
+
+			subtotal += totalCost;
+		}
+
+		document.getElementById('subtotal').value = subtotal.toFixed(2); // writes subtotal
+
+		tax = 0.0625 * subtotal;
+		document.getElementById('tax').value = tax.toFixed(2); // writes tax
+
+		finalCost = tax + subtotal;
+		document.getElementById('total').value = (finalCost).toFixed(2); // writes final price
+	}
+
+	function checkPrices(){
+		if(parseFloat(document.getElementById('total').value) == 0){ // checks that the user has made at least 1 selection
+			alert("Please make at least one selection");
+			return false;
+		}
+		return true;
+	}
+
+	function writeOrder() { // function that writes the order in the form of a list in HTML
+		prices = document.getElementsByClassName('cost');
+		items = document.getElementsByClassName('itemName');
+		total = document.getElementsByName('cost');
+
+		str = "Your Order: <br />";
+		
+		for(i = 0; i < prices.length; i++){
+			str += "<br />" + items[i].innerText + "<li>"+ parseFloat(document.getElementsByName('quan' + i)[0].value);
+			str += " ordered.</li> <li>Cost: $" + total[i].value + "</li>";
+		}
+		
+		str += "<br/>Final Prices:<li>Subtotal: $" + document.getElementById('subtotal').value + "</li>";
+		str += "<li>Tax: $" + document.getElementById('tax').value + "</li>";
+		str += "<li>Final price: $" + document.getElementById('total').value + "</li>";
+
+
+		if(document.getElementById('pickup').checked){
+			str += "<br /> Pickup time: <li>" + validateTime() + "</li>";
+		}
+		else{
+			str += "<br /> Expected delivery time: <li>" + validateTime() + "</li>";
+		}
+
+		return str;
+	}
+
+	function check() { // function that checks if pickup or delivery is checked, displays or hides input boxes accordingly
+		if(document.getElementById('pickup').checked){
+			document.getElementsByClassName('userInfo address')[0].style.display = "none";
+			document.getElementsByClassName('userInfo address')[1].style.display = "none";
+		}
+		else{
+			document.getElementsByClassName('userInfo address')[0].style.display = "block";
+			document.getElementsByClassName('userInfo address')[1].style.display = "block";
+		}
+		getPrices();
+	}
+
+	function validateDelivery() {
+		if(document.getElementById('pickup').checked){ // validates to make sure if fields are filled when delivery is checked
+			return true;
+		}
+		else{
+			if(document.getElementsByName('street')[0].value == ''){
+				alert('Please enter your street address for delivery.');
+				return false;
+			}
+			if(document.getElementsByName('city')[0].value == ''){
+				alert('Please enter your city for delivery.');
+				return false;
+			}
+			return true;
+		}
+	}
+
+	function validateTime() { //validates the time, returns the time as a string in 30 or 15 minutes
+		var today = new Date(); 
+		var finalTime;
+		if(document.getElementById('pickup').checked){
+			finalTime = new Date(today.getTime() + 15*60000);
+		}
+		else{
+			finalTime = new Date(today.getTime() + 30 * 60000);
+		}
+		mins = "" + finalTime.getMinutes();
+		if(finalTime.getMinutes() < 10){
+			mins = "0" + mins;
+		}
+		mins = finalTime.getHours() + ":" + mins;
+		return mins;
+	}
+
+	function writeDoc() { // writes the final order to a new window
+		order = writeOrder();
+		newWindow = window.open("", "MsgWindow", "width=600, height=500");
+		newWindow.document.write(order);
+	}
+
+</script>
+
+
+<body>
+<script>
+
+function MenuItem(name, cost)
+{
+	this.name = name;
+	this.cost=cost;
+}
+
+menuItems = new Array(
+	new MenuItem("Chicken Chop Suey", 4.5),
+	new MenuItem("Sweet and Sour Pork", 6.25),
+	new MenuItem("Shrimp Lo Mein", 6.25),
+	new MenuItem("Moo Shi Chicken", 7.5),
+	new MenuItem("Fried Rice", 2.85)
+);
+
+function makeSelect(name, minRange, maxRange)
+{
+	var t= "";
+	t = "<select name='" + name + "' onchange=getPrices()  size='1'>";
+	for (j=minRange; j<=maxRange; j++)
+	   t += "<option>" + j + "</option>";
+	t+= "</select>"; 
+	return t;
+}
+
+function td(content, className="")
+{
+	return "<td class = '" + className + "'>" + content + "</td>";
+}
+	
+</script>
+
+<h1>Jade Delight</h1>
+<h2>Order Below</h2>
+<form onsubmit="return validate()">
+
+<p class="userInfo"><label>First Name:</label> <input type="text"  name='fname'/></p>
+<p class="userInfo"><label>Last Name*</label>:  <input type="text"  name='lname' required /></p>
+<p class="userInfo address"><label>Street*</label>: <input type="text" name='street' /></p>
+<p class="userInfo address"><label>City*</label>: <input type="text" name='city' /></p>
+<p class="userInfo"><label>Phone*</label>: <input type="text"  name='phone' /></p>
+<p> 
+	<input type="radio"  name="p_or_d" value = "pickup" id="pickup" onclick="check();" checked="checked"/>Pickup  
+	<input type="radio"  name='p_or_d' value = 'delivery' id="delivery" onclick="check();"/>
+	Delivery
+</p>
+
+<div id="table1">
+<table border="0" cellpadding="3">
+  <tr>
+    <th>Select Item</th>
+    <th>Item Name</th>
+    <th>Cost Each</th>
+    <th>Total Cost</th>
+  </tr>
+<script>
+
+  var s = "";
+  for (i=0; i< menuItems.length; i++)
+  {
+	  s += "<tr>";
+	  s += td(makeSelect("quan" + i, 0, 10),"selectQuantity");
+	  s += td(menuItems[i].name, "itemName");
+	  s += td("$" +menuItems[i].cost.toFixed(2), "cost");
+	  s += td("$<input type='text' name='cost'/>", "totalCost");
+	  s+= "</tr>";
+  }
+  document.writeln(s);
+</script>
+</table>
+</div>
+
+<p class="subtotal totalSection"><label>Subtotal</label>: 
+   $ <input type="text"  name='subtotal' id="subtotal" />
+</p>
+<p class="tax totalSection"><label>Mass tax 6.25%:</label>
+  $ <input type="text"  name='tax' id="tax" />
+</p>
+<p class="total totalSection"><label>Total:</label> $ <input type="text"  name='total' id="total" />
+</p>
+
+<input type = "button" id="button" value = "Submit Order" onclick="validate()"/>
+
+</form>
+</body>
+</html>
