@@ -49,6 +49,11 @@
 		color: white;
 	}
 
+	.required:after{
+		content: "*";
+		color: red;
+	}
+
 
 </style>
 
@@ -238,10 +243,10 @@ function td(content, className="")
 <form onsubmit="return validate()">
 
 <p class="userInfo"><label>First Name:</label> <input type="text"  name='fname'/></p>
-<p class="userInfo"><label>Last Name*</label>:  <input type="text"  name='lname' required /></p>
-<p class="userInfo address"><label>Street*</label>: <input type="text" name='street' /></p>
-<p class="userInfo address"><label>City*</label>: <input type="text" name='city' /></p>
-<p class="userInfo"><label>Phone*</label>: <input type="text"  name='phone' /></p>
+<p class="userInfo"><label class="required">Last Name</label>:  <input type="text"  name='lname' required /></p>
+<p class="userInfo address"><label class="required">Street</label>: <input type="text" name='street' /></p>
+<p class="userInfo address"><label class="required">City</label>: <input type="text" name='city' /></p>
+<p class="userInfo"><label class="required">Phone</label>: <input type="text"  name='phone' /></p>
 <p> 
 	<input type="radio"  name="p_or_d" value = "pickup" id="pickup" onclick="check();" checked="checked"/>Pickup  
 	<input type="radio"  name='p_or_d' value = 'delivery' id="delivery" onclick="check();"/>
